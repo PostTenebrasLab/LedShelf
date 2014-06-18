@@ -52,5 +52,7 @@ Librairies :
 -----------
 
 
-   - https://github.com/adafruit/Adafruit_NeoPixel
+  ( - https://github.com/adafruit/Adafruit_NeoPixel )
+   - http://www.pjrc.com/teensy/td_libs_OctoWS2811.html
+
 
