@@ -1,6 +1,51 @@
+## REST
 
-Description :
--------------
+###Pour commander les LEDs
+
+#### description du protocol
+
+URL : IP:PORT/ptlshelf?command
+
+command : op,grp,(lst),value
+
+op+grp = 1 byte
+
+op : op code could be [set color, turn off]  (4 bits)
+    set : b0001
+    off : b0000
+    
+grp : could be one of those group of LED [one, columns, lines,  group, shelf0, shelf1, all] (4 bits)
+    one     : b0001
+    column  : b0010 
+    lines   : b0011
+    group   : b0100
+    shelf0  : b0101 (unused)
+    shelf1  : b0110 (unused)
+    all     : b1111
+    
+    ex: set one led, 0x11
+    ex: set line, 0x13
+    ex: turn all led off, 0x0F
+    
+lst :
+
+ * one = led number (0..119)  ex: led 56, 0x38 (1 byte)
+
+ * lines = 0 == top, 14 == bottom, ex: line 2,3 and 10, b0000 0010 0000 1100 (2 bytes)
+ * columns = 0 == left, 7 == right ex: column 1,2 and 5 b0010 0110 (1 bytes)
+
+ * group = 8c * 16l (24 bytes) ex: LED (0,0),(2,14),(2,1) and (7,5) 0x00 0x20 (..)0x40 0x02 0x00 0x00 0x00 0x01
+
+ * all = nothing (0 byte)
+
+value :
+
+ * LED color GRB (3 bytes)
+ * turn off = nothing (0 byte)
+
+
+## Description :
+
 
 WS2801 utilise data et une clock (deux fils)
 WS2811, WS2812b n'utilisent pas de clock (elle est interne) mais juste un bus data
@@ -39,20 +84,28 @@ différence minime peut compromettre le signal.
 
 
 
-Documentation :
---------------
+## Documentation :
 
-    wget https://www.adafruit.com/datasheets/WS2801.pdf
-    wget http://www.adafruit.com/datasheets/WS2812B.pdf
+### Teensy 3.1
 
-   - http://bleaklow.com/2012/12/02/driving_the_ws2811_at_800khz_with_a_16mhz_avr.html
+ * https://www.pjrc.com/teensy/K20P64M72SF1RM.pdf
+ * https://www.pjrc.com/teensy/datasheets.html (Other teensy datasheets)
+
+### LEDs strip WS2812
+
+ * https://www.adafruit.com/datasheets/WS2801.pdf
+ * http://www.adafruit.com/datasheets/WS2812B.pdf
+
+ * http://bleaklow.com/2012/12/02/driving_the_ws2811_at_800khz_with_a_16mhz_avr.html
 
 
-Librairies :
------------
+## Librairies :
 
+### OctoWS2811
 
-  ( - https://github.com/adafruit/Adafruit_NeoPixel )
-   - http://www.pjrc.com/teensy/td_libs_OctoWS2811.html
+ * https://www.pjrc.com/teensy/td_libs_OctoWS2811.html
 
+#### Github
+
+* https://github.com/PaulStoffregen/OctoWS2811
 
