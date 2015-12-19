@@ -21,7 +21,6 @@ __status__ = "Project"
 import requests
 import struct
 import json
-import binascii
 import base64
 
 SRV = '192.168.101.208'
