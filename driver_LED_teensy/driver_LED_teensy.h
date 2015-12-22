@@ -18,9 +18,10 @@
 #define CSN_PIN         10
 #define WAKEUP_PIN      17
 #define RELAY_PIN       18
+#define HWSERIAL        Serial2
 
-#define RelayOn digital(RELAY_PIN, HIGH)
-#define RelayOff digital(RELAY_PIN, LOW)
+#define RelayOn digitalWrite(RELAY_PIN, HIGH)
+#define RelayOff digitalWrite(RELAY_PIN, LOW)
 
 #define RED    0xFF0000
 #define GREEN  0x00FF00

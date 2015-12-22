@@ -48,7 +48,6 @@
 #include <avr/sleep.h>
 
 #include <OctoWS2811.h>
-#include <SPI.h>
 #include "driver_LED_teensy.h"
 
 const int ledsPerStrip = NB_LEDS;     // 8 * 15 shelfs
@@ -56,43 +55,17 @@ const int ledsPerStrip = NB_LEDS;     // 8 * 15 shelfs
 /* OctoWS2811 */
 DMAMEM int displayMemory[ledsPerStrip*6];
 int drawingMemory[ledsPerStrip*6];
+
 const int config = WS2811_GRB | WS2811_800kHz;
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
+
 
 unsigned long time = 0;
 
 /* SPI buffer */
-char buf [100];
-volatile byte pos;
-volatile boolean process_it;
-
-/* Interrupt pin change Wake up */
-ISR(PCINT0_vect){
-
-}
-
-/* Turn the teensy in deep sleep mode after a while */
-ISR(TIMER0_COMPA_vect){
-
-
-}
-
-/* SPI interrupt  */
-ISR(SPI_STC_vect){
-
-    byte c = SPDR;  // grab byte from SPI Data Register
-  
-    // add to buffer if room
-    if (pos < sizeof buf){
-        buf [pos++] = c;            
-
-        // example: newline means time to process buffer
-        if (c == '\n')
-            process_it = true;
-                             
-    }
-}
-
+//char buf [100];
+//volatile byte pos;
+//volatile boolean process_it;
 
 void setup() {
 
@@ -102,66 +75,50 @@ void setup() {
     Serial.begin(115200);
     Serial.println("Listening...");
 
+    /* serial for NodeMCU communication */
+    HWSERIAL.begin(115200);
+
 
     /*=======================
       init OctoWS2811
     =======================*/
-
     leds.begin();
     Serial.println("LED strip initialized...");
 
-
-    /*=======================
-      SPI slave mode
-    =======================*/
-    // turn on SPI in slave mode
-    SPCR |= bit (SPE);
-
-    // have to send on master in, *slave out*
-    pinMode(MISO, OUTPUT);
-         
-    // get ready for an interrupt 
-    pos = 0;   // buffer empty
-    process_it = false;
-
-    // now turn on interrupts
-    SPI.attachInterrupt();
-
-
-    /*====== Interrupt =======*/
-    NVIC_ENABLE_IRQ();
-    attachInterrupt();
-    pinMode(WAKEUP_PIN, INPUT);
-
-
-    /*====== RELAY =======*/
-    pinMode(RELAY_PIN, OUTPUT);
-    RelayOff;
-
+    int i = 0;
+    for (i = 0; i < 8*ledsPerStrip; i++)
+        leds.setPixel(i, 0x000000);
 }
 
 
 void loop() {
-  
-    if (process_it) {
-        buf [pos] = 0;  
-        Serial.println(buf);
-        pos = 0;
-        process_it = false;
-        process_msg(buf);
-    }
 
+    if(HWSERIAL.available() > 4) {
+
+        unsigned int i;
+        unsigned int len = atoi(HWSERIAL.read());
+  
+        for( i = 0; i < len; i++) {
+            
+            unsigned long color = 0;
+            unsigned int x, y;
+            
+            while(HWSERIAL.available() < 5){};
+            
+            color = HWSERIAL.read();
+            color = (color << 8) | HWSERIAL.read();
+            color = (color << 8) | HWSERIAL.read();
+
+            x = HWSERIAL.read();
+            y = HWSERIAL.read();
+            x = x*15 + (ledsPerStrip-y) - 1;
+            leds.setPixel(x, color);
+        }
+    }
+    
     /*  apply LEDs' status */
     if(!leds.busy()){
         leds.show();
     }
 }
 
-
-void process_msg(char *msg){
-
-    while(leds.busy()){};
-
-    leds.setPixel(70, 0xE05800);
-    leds.show();
-}
