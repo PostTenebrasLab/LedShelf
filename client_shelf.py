@@ -19,14 +19,44 @@ __licence__ = "GPL"
 __status__ = "Project"
 
 import requests
-import struct
-import json
-import base64
+import time
+import random
 
-SRV = '192.168.101.208'
-PORT = '8080'
+SRV = '192.168.80.168'
+PORT = '5000'
 
-setoneled = struct.pack('5B', 0x11, 0x25, 0x72, 0xFF, 0xF2)
-r = requests.get('http://'+SRV+':'+PORT+'/ptl?values='+base64.b64encode(setoneled).__str__())
 
-print(json.loads(r.text))
+def set_led(x, y, color):
+    val = ":".join(('led', hex(color).__str__(), x.__str__(), y.__str__()))
+    requests.get('http://'+SRV+':'+PORT+'/ptl?values='+val)
+
+def set_line(line, color):
+    val = ":".join(('line', hex(color).__str__(), line.__str__())   )
+    requests.get('http://'+SRV+':'+PORT+'/ptl?values='+val)
+
+def set_column(col, color):
+    val = ":".join(('column', hex(color).__str__(), col.__str__()))
+    requests.get('http://'+SRV+':'+PORT+'/ptl?values='+val)
+
+def set_all(color):
+    val = ":".join(('set_all', hex(color).__str__()))
+    requests.get('http://'+SRV+':'+PORT+'/ptl?values='+val)
+
+def clear_all():
+    requests.get('http://'+SRV+':'+PORT+'/ptl?values=clear_all')
+
+MIN = 50
+MAX = 150
+
+while(1):
+    color = random.randint(MIN, MAX) << 16 | random.randint(MIN, MAX) << 8 | random.randint(MIN, MAX)
+    set_led(random.randint(4, 7), random.randint(0, 14), color)
+    time.sleep(random.random())
+
+# while(1):
+#     color = random.randint(MIN, MAX) << 16 | random.randint(MIN, MAX) << 8 | random.randint(MIN, MAX)
+#     set_line(random.randint(0, 15), color)
+#     time.sleep(random.random())
+
+
+
